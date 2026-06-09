@@ -19,7 +19,7 @@ class UpdateOfferRequest extends FormRequest
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'image' => 'nullable',
+            'image' => 'nullable|image|max:5120',
             'starts_at' => 'nullable|date',
             'ends_at' => 'nullable|date|after_or_equal:starts_at',
             'is_active' => 'nullable|boolean',

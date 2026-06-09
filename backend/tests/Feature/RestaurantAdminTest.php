@@ -79,15 +79,12 @@ class RestaurantAdminTest extends TestCase
     public function test_can_create_category(): void
     {
         $response = $this->postJson('/api/restaurant-admin/categories', [
-            'name_ar' => 'مشروبات ساخنة',
-            'name_en' => 'Hot Drinks',
-            'subtitle_ar' => 'أجود أنواع القهوة',
-            'subtitle_en' => 'Finest coffee',
-            'icon' => '☕',
+            'name' => 'مشروبات ساخنة Hot Drinks',
+            'description' => 'أجود أنواع القهوة Finest coffee',
         ], $this->headers());
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['id', 'name_ar', 'name_en', 'order']);
+            ->assertJsonStructure(['id', 'name', 'order']);
     }
 
     public function test_category_respects_plan_limit(): void
@@ -96,8 +93,7 @@ class RestaurantAdminTest extends TestCase
         $plan->update(['limit_categories' => 0]);
 
         $response = $this->postJson('/api/restaurant-admin/categories', [
-            'name_ar' => 'كاف',
-            'name_en' => 'Cafe',
+            'name' => 'كاف Cafe',
         ], $this->headers());
 
         $response->assertStatus(403);
@@ -107,24 +103,22 @@ class RestaurantAdminTest extends TestCase
     {
         $category = Category::create([
             'restaurant_id' => $this->restaurant->id,
-            'name_ar' => 'قديم',
-            'name_en' => 'Old',
+            'name' => 'قديم Old',
             'order' => 1,
         ]);
 
         $response = $this->putJson("/api/restaurant-admin/categories/{$category->id}", [
-            'name_ar' => 'جديد',
-            'name_en' => 'New',
+            'name' => 'جديد New',
         ], $this->headers());
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.name_en', 'New');
+            ->assertJsonPath('name', 'جديد New');
     }
 
     public function test_can_reorder_categories(): void
     {
-        $cat1 = Category::create(['restaurant_id' => $this->restaurant->id, 'name_ar' => 'أ', 'name_en' => 'A', 'order' => 1]);
-        $cat2 = Category::create(['restaurant_id' => $this->restaurant->id, 'name_ar' => 'ب', 'name_en' => 'B', 'order' => 2]);
+        $cat1 = Category::create(['restaurant_id' => $this->restaurant->id, 'name' => 'أ A', 'order' => 1]);
+        $cat2 = Category::create(['restaurant_id' => $this->restaurant->id, 'name' => 'ب B', 'order' => 2]);
 
         $response = $this->postJson('/api/restaurant-admin/categories/reorder', [
             'order' => [
@@ -139,11 +133,10 @@ class RestaurantAdminTest extends TestCase
     public function test_cannot_update_other_restaurants_category(): void
     {
         $other = Restaurant::create(['user_id' => User::factory()->create()->id, 'slug' => 'other']);
-        $category = Category::create(['restaurant_id' => $other->id, 'name_ar' => 'x', 'name_en' => 'x', 'order' => 1]);
+        $category = Category::create(['restaurant_id' => $other->id, 'name' => 'x', 'order' => 1]);
 
         $response = $this->putJson("/api/restaurant-admin/categories/{$category->id}", [
-            'name_ar' => 'hack',
-            'name_en' => 'hack',
+            'name' => 'hack',
         ], $this->headers());
 
         $response->assertStatus(403);
@@ -153,8 +146,7 @@ class RestaurantAdminTest extends TestCase
     {
         $category = Category::create([
             'restaurant_id' => $this->restaurant->id,
-            'name_ar' => 'حذف',
-            'name_en' => 'Delete',
+            'name' => 'حذف Delete',
             'order' => 1,
         ]);
 
@@ -175,17 +167,15 @@ class RestaurantAdminTest extends TestCase
 
         $response = $this->postJson('/api/restaurant-admin/products', [
             'category_id' => $category->id,
-            'name_ar' => 'قهوة',
-            'name_en' => 'Coffee',
-            'description_ar' => 'وصف',
-            'description_en' => 'Description',
+            'name' => 'قهوة Coffee',
+            'description' => 'وصف Description',
             'price' => 15.00,
             'is_available' => true,
             'tags' => ['Popular'],
         ], $this->headers());
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['data' => ['id', 'name_en', 'price', 'active_price']]);
+            ->assertJsonStructure(['id', 'name', 'price', 'active_price']);
     }
 
     public function test_product_respects_plan_limit(): void
@@ -197,8 +187,7 @@ class RestaurantAdminTest extends TestCase
 
         $response = $this->postJson('/api/restaurant-admin/products', [
             'category_id' => $category->id,
-            'name_ar' => 'شاي',
-            'name_en' => 'Tea',
+            'name' => 'شاي Tea',
             'price' => 10.00,
         ], $this->headers());
 
@@ -211,29 +200,27 @@ class RestaurantAdminTest extends TestCase
         $product = Product::create([
             'category_id' => $category->id,
             'restaurant_id' => $this->restaurant->id,
-            'name_ar' => 'قديم',
-            'name_en' => 'Old',
+            'name' => 'قديم Old',
             'price' => 10.00,
             'order' => 1,
         ]);
 
         $response = $this->putJson("/api/restaurant-admin/products/{$product->id}", [
             'category_id' => $category->id,
-            'name_ar' => 'جديد',
-            'name_en' => 'New',
+            'name' => 'جديد New',
             'price' => 20.00,
         ], $this->headers());
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.name_en', 'New')
-            ->assertJsonPath('data.price', 20.0);
+            ->assertJsonPath('name', 'جديد New')
+            ->assertJsonPath('price', 20);
     }
 
     public function test_can_reorder_products(): void
     {
         $category = Category::create(['restaurant_id' => $this->restaurant->id, 'name_ar' => 'x', 'name_en' => 'x', 'order' => 1]);
-        $prod1 = Product::create(['category_id' => $category->id, 'restaurant_id' => $this->restaurant->id, 'name_ar' => 'أ', 'name_en' => 'A', 'price' => 10, 'order' => 1]);
-        $prod2 = Product::create(['category_id' => $category->id, 'restaurant_id' => $this->restaurant->id, 'name_ar' => 'ب', 'name_en' => 'B', 'price' => 10, 'order' => 2]);
+        $prod1 = Product::create(['category_id' => $category->id, 'restaurant_id' => $this->restaurant->id, 'name' => 'أ A', 'price' => 10, 'order' => 1]);
+        $prod2 = Product::create(['category_id' => $category->id, 'restaurant_id' => $this->restaurant->id, 'name' => 'ب B', 'price' => 10, 'order' => 2]);
 
         $response = $this->postJson('/api/restaurant-admin/products/reorder', [
             'order' => [
@@ -251,8 +238,7 @@ class RestaurantAdminTest extends TestCase
         $product = Product::create([
             'category_id' => $category->id,
             'restaurant_id' => $this->restaurant->id,
-            'name_ar' => 'x',
-            'name_en' => 'Del Prod',
+            'name' => 'Del Prod',
             'price' => 5.00,
             'order' => 1,
         ]);
@@ -275,7 +261,7 @@ class RestaurantAdminTest extends TestCase
         ], $this->headers());
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['data' => ['id', 'title_en', 'discount_percentage']]);
+            ->assertJsonStructure(['id', 'title_en', 'discount_percentage']);
     }
 
     public function test_can_update_offer(): void
@@ -292,7 +278,7 @@ class RestaurantAdminTest extends TestCase
         ], $this->headers());
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.title_en', 'New Offer');
+            ->assertJsonPath('title_en', 'New Offer');
     }
 
     public function test_can_view_settings(): void
@@ -316,7 +302,7 @@ class RestaurantAdminTest extends TestCase
         ], $this->headers());
 
         $response->assertStatus(200)
-            ->assertJsonPath('settings.data.name_en', 'New Restaurant');
+            ->assertJsonPath('settings.name_en', 'New Restaurant');
     }
 
     public function test_can_view_qr_code(): void

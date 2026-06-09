@@ -1,0 +1,1278 @@
+openapi: 3.1.0
+info:
+  title: Menu Platform API
+  description: |
+    Multi-tenant SaaS Digital Menu Platform REST API.
+    
+    ## Authentication
+    All authenticated endpoints require a Bearer token obtained via `/api/auth/login`.
+    Pass the token in the `Authorization` header: `Bearer {token}`.
+    
+    ## Roles
+    - **super-admin**: Full platform management
+    - **restaurant-admin**: Restaurant-scoped management (tenant-scoped)
+    
+    ## Multi-Tenancy
+    Restaurant admin endpoints are automatically scoped to the authenticated user's restaurant via `TenantScope` middleware.
+  version: 1.0.0
+  contact:
+    name: Platform Admin
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local Development
+  - url: https://api.menu-platform.com/api
+    description: Production
+
+tags:
+  - name: Auth
+    description: Authentication & registration
+  - name: Super Admin
+    description: Platform-wide management (super-admin role)
+  - name: Restaurant Admin
+    description: Restaurant-scoped management (restaurant-admin role)
+  - name: Public Menu
+    description: Public customer-facing menu endpoints
+
+paths:
+  # ==================== AUTH ====================
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new restaurant owner
+      description: Creates a new user with restaurant-admin role, a restaurant, and an active trial subscription.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    description: Sanctum Bearer token
+                  restaurant:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      slug:
+                        type: string
+                      status:
+                        type: string
+        '422':
+          $ref: '#/components/responses/ValidationErrors'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      description: Authenticate with email and password. Suspended restaurant owners cannot log in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                  restaurant:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      slug:
+                        type: string
+                      status:
+                        type: string
+        '401':
+          description: Invalid credentials
+        '403':
+          description: Account suspended
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Revoke the current Bearer token.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ==================== SUPER ADMIN ====================
+  /super-admin/dashboard:
+    get:
+      tags: [Super Admin]
+      summary: Super admin dashboard metrics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: object
+                    properties:
+                      total_restaurants:
+                        type: integer
+                      active_restaurants:
+                        type: integer
+                      suspended_restaurants:
+                        type: integer
+                      total_menu_views:
+                        type: integer
+                      monthly_revenue:
+                        type: number
+                      total_products:
+                        type: integer
+                      total_categories:
+                        type: integer
+                  charts:
+                    type: object
+                    properties:
+                      registrations_growth:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                            count:
+                              type: integer
+                      views_growth:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                            count:
+                              type: integer
+
+  /super-admin/restaurants:
+    get:
+      tags: [Super Admin]
+      summary: List all restaurants
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Restaurant'
+    post:
+      tags: [Super Admin]
+      summary: Create a restaurant
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRestaurantRequest'
+      responses:
+        '201':
+          description: Restaurant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+
+  /super-admin/restaurants/{restaurant}:
+    get:
+      tags: [Super Admin]
+      summary: View a restaurant
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RestaurantId'
+      responses:
+        '200':
+          description: Restaurant detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+    delete:
+      tags: [Super Admin]
+      summary: Delete a restaurant
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RestaurantId'
+      responses:
+        '200':
+          description: Restaurant deleted
+
+  /super-admin/restaurants/{restaurant}/status:
+    post:
+      tags: [Super Admin]
+      summary: Update restaurant status
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RestaurantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRestaurantStatusRequest'
+      responses:
+        '200':
+          description: Status updated
+
+  /super-admin/plans:
+    get:
+      tags: [Super Admin]
+      summary: List subscription plans
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionPlan'
+    post:
+      tags: [Super Admin]
+      summary: Create a subscription plan
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePlanRequest'
+      responses:
+        '201':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+
+  /super-admin/plans/{plan}:
+    put:
+      tags: [Super Admin]
+      summary: Update a subscription plan
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequest'
+      responses:
+        '200':
+          description: Plan updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlan'
+    delete:
+      tags: [Super Admin]
+      summary: Delete a subscription plan
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Plan deleted
+        '422':
+          description: Cannot delete plan with active subscriptions
+
+  /super-admin/users:
+    get:
+      tags: [Super Admin]
+      summary: List restaurant admin users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /super-admin/users/{user}/reset-password:
+    post:
+      tags: [Super Admin]
+      summary: Reset user password
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset
+        '422':
+          $ref: '#/components/responses/ValidationErrors'
+
+  /super-admin/users/{user}/status:
+    post:
+      tags: [Super Admin]
+      summary: Toggle user/restaurant suspended status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status toggled
+        '422':
+          description: No restaurant associated with this user
+
+  /super-admin/settings:
+    get:
+      tags: [Super Admin]
+      summary: Get platform system settings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: System settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  platform_name:
+                    type: string
+                  platform_logo:
+                    type: string
+                  smtp_host:
+                    type: string
+                  smtp_port:
+                    type: string
+                  smtp_username:
+                    type: string
+                  storage_driver:
+                    type: string
+                  maintenance_mode:
+                    type: boolean
+    post:
+      tags: [Super Admin]
+      summary: Update platform system settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSystemSettingsRequest'
+      responses:
+        '200':
+          description: Settings updated
+
+  /super-admin/logs:
+    get:
+      tags: [Super Admin]
+      summary: Get activity logs (paginated)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Paginated activity logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityLogCollection'
+
+  # ==================== RESTAURANT ADMIN ====================
+  /restaurant-admin/dashboard:
+    get:
+      tags: [Restaurant Admin]
+      summary: Restaurant dashboard metrics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: object
+                    properties:
+                      total_views:
+                        type: integer
+                      daily_views:
+                        type: integer
+                      monthly_views:
+                        type: integer
+                      categories_count:
+                        type: integer
+                      products_count:
+                        type: integer
+                      active_offers:
+                        type: integer
+                  most_viewed_products:
+                    type: array
+                    items:
+                      type: object
+
+  /restaurant-admin/analytics:
+    get:
+      tags: [Restaurant Admin]
+      summary: Restaurant analytics data
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Analytics data with charts and device stats
+
+  /restaurant-admin/settings:
+    get:
+      tags: [Restaurant Admin]
+      summary: Get restaurant settings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Restaurant settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantSetting'
+    post:
+      tags: [Restaurant Admin]
+      summary: Update restaurant settings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSettingsRequest'
+      responses:
+        '200':
+          description: Settings updated
+
+  /restaurant-admin/settings/qr:
+    get:
+      tags: [Restaurant Admin]
+      summary: Get QR code as base64 PNG
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: QR code data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                  qr_code_base64:
+                    type: string
+
+  /restaurant-admin/settings/qr/png:
+    get:
+      tags: [Restaurant Admin]
+      summary: Download QR code as PNG file
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: PNG image binary
+
+  /restaurant-admin/settings/qr/pdf:
+    get:
+      tags: [Restaurant Admin]
+      summary: Download QR code as PDF file
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: PDF binary
+
+  /restaurant-admin/categories:
+    get:
+      tags: [Restaurant Admin]
+      summary: List restaurant categories
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of categories with product counts
+    post:
+      tags: [Restaurant Admin]
+      summary: Create a category
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCategoryRequest'
+      responses:
+        '201':
+          description: Category created
+        '403':
+          description: Plan limit reached
+
+  /restaurant-admin/categories/{category}:
+    put:
+      tags: [Restaurant Admin]
+      summary: Update a category
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCategoryRequest'
+      responses:
+        '200':
+          description: Category updated
+        '403':
+          description: Unauthorized access
+    delete:
+      tags: [Restaurant Admin]
+      summary: Delete a category
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category deleted
+
+  /restaurant-admin/categories/reorder:
+    post:
+      tags: [Restaurant Admin]
+      summary: Reorder categories
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderRequest'
+      responses:
+        '200':
+          description: Categories reordered
+
+  /restaurant-admin/products:
+    get:
+      tags: [Restaurant Admin]
+      summary: List restaurant products
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of products
+    post:
+      tags: [Restaurant Admin]
+      summary: Create a product
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreProductRequest'
+      responses:
+        '201':
+          description: Product created
+        '403':
+          description: Plan limit reached
+
+  /restaurant-admin/products/{product}:
+    put:
+      tags: [Restaurant Admin]
+      summary: Update a product
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: product
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreProductRequest'
+      responses:
+        '200':
+          description: Product updated
+        '403':
+          description: Unauthorized access
+    delete:
+      tags: [Restaurant Admin]
+      summary: Delete a product
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: product
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Product deleted
+
+  /restaurant-admin/products/reorder:
+    post:
+      tags: [Restaurant Admin]
+      summary: Reorder products
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderRequest'
+      responses:
+        '200':
+          description: Products reordered
+
+  /restaurant-admin/offers:
+    get:
+      tags: [Restaurant Admin]
+      summary: List restaurant offers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of offers
+    post:
+      tags: [Restaurant Admin]
+      summary: Create an offer
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreOfferRequest'
+      responses:
+        '201':
+          description: Offer created
+
+  /restaurant-admin/offers/{offer}:
+    put:
+      tags: [Restaurant Admin]
+      summary: Update an offer
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: offer
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreOfferRequest'
+      responses:
+        '200':
+          description: Offer updated
+        '403':
+          description: Unauthorized access
+    delete:
+      tags: [Restaurant Admin]
+      summary: Delete an offer
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: offer
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Offer deleted
+
+  # ==================== PUBLIC MENU ====================
+  /menus/{slug}:
+    get:
+      tags: [Public Menu]
+      summary: Get public restaurant menu
+      description: Returns restaurant menu data by slug. Logs a menu view. Suspended restaurants return 403.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Restaurant slug
+      responses:
+        '200':
+          description: Public menu data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  restaurant:
+                    type: object
+                    properties:
+                      slug:
+                        type: string
+                      status:
+                        type: string
+                  settings:
+                    $ref: '#/components/schemas/RestaurantSetting'
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name_ar:
+                          type: string
+                        name_en:
+                          type: string
+                        products:
+                          type: array
+                          items:
+                            type: object
+                  offers:
+                    type: array
+                    items:
+                      type: object
+                  recommended:
+                    type: array
+                    items:
+                      type: object
+        '403':
+          description: Restaurant suspended
+        '404':
+          description: Restaurant not found
+
+  /products/{product}/view:
+    post:
+      tags: [Public Menu]
+      summary: Log a product view
+      parameters:
+        - name: product
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: View logged
+
+# ==================== COMPONENTS ====================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+      description: Obtain token via POST /api/auth/login or /api/auth/register
+
+  parameters:
+    RestaurantId:
+      name: restaurant
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+
+    RegisterRequest:
+      type: object
+      required: [name, email, password, restaurant_name_ar, restaurant_name_en, restaurant_slug]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+        password_confirmation:
+          type: string
+        restaurant_name_ar:
+          type: string
+          maxLength: 255
+        restaurant_name_en:
+          type: string
+          maxLength: 255
+        restaurant_slug:
+          type: string
+          pattern: '^[a-zA-Z0-9_-]+$'
+          maxLength: 50
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+
+    Restaurant:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        status:
+          type: string
+        settings:
+          $ref: '#/components/schemas/RestaurantSetting'
+        owner:
+          $ref: '#/components/schemas/User'
+
+    RestaurantSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+        name_ar:
+          type: string
+        name_en:
+          type: string
+        contact_email:
+          type: string
+        contact_phone:
+          type: string
+        address_ar:
+          type: string
+        address_en:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        cover_image:
+          type: string
+          nullable: true
+        primary_color:
+          type: string
+        secondary_color:
+          type: string
+        accent_color:
+          type: string
+        button_style:
+          type: string
+        typography_selection:
+          type: string
+
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+        duration_days:
+          type: integer
+        features:
+          type: array
+          items:
+            type: string
+        limit_categories:
+          type: integer
+        limit_products:
+          type: integer
+
+    StoreRestaurantRequest:
+      type: object
+      required: [owner_id, slug, name_ar, name_en, plan_id]
+      properties:
+        owner_id:
+          type: integer
+        slug:
+          type: string
+          pattern: '^[a-zA-Z0-9_-]+$'
+          maxLength: 50
+        name_ar:
+          type: string
+        name_en:
+          type: string
+        plan_id:
+          type: integer
+
+    UpdateRestaurantStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [active, suspended, pending]
+
+    StorePlanRequest:
+      type: object
+      required: [name, price, duration_days, limit_categories, limit_products]
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        duration_days:
+          type: integer
+          minimum: 1
+        features:
+          type: array
+          items:
+            type: string
+        limit_categories:
+          type: integer
+        limit_products:
+          type: integer
+
+    UpdatePlanRequest:
+      $ref: '#/components/schemas/StorePlanRequest'
+
+    ResetPasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          minLength: 8
+        password_confirmation:
+          type: string
+
+    UpdateSystemSettingsRequest:
+      type: object
+      required: [platform_name, storage_driver, maintenance_mode]
+      properties:
+        platform_name:
+          type: string
+        platform_logo:
+          type: string
+        smtp_host:
+          type: string
+        smtp_port:
+          type: string
+        storage_driver:
+          type: string
+          enum: [local, s3]
+        maintenance_mode:
+          type: boolean
+
+    StoreCategoryRequest:
+      type: object
+      required: [name_ar, name_en]
+      properties:
+        name_ar:
+          type: string
+          maxLength: 255
+        name_en:
+          type: string
+          maxLength: 255
+        subtitle_ar:
+          type: string
+          maxLength: 255
+        subtitle_en:
+          type: string
+          maxLength: 255
+        icon:
+          type: string
+          maxLength: 10
+
+    StoreProductRequest:
+      type: object
+      required: [category_id, name_ar, name_en, price]
+      properties:
+        category_id:
+          type: integer
+        name_ar:
+          type: string
+          maxLength: 255
+        name_en:
+          type: string
+          maxLength: 255
+        description_ar:
+          type: string
+        description_en:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        discount_price:
+          type: number
+          minimum: 0
+        image:
+          type: string
+          format: binary
+        is_available:
+          type: boolean
+        is_featured:
+          type: boolean
+        is_recommended:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+
+    StoreOfferRequest:
+      type: object
+      required: [title_ar, title_en]
+      properties:
+        title_ar:
+          type: string
+          maxLength: 255
+        title_en:
+          type: string
+          maxLength: 255
+        description_ar:
+          type: string
+        description_en:
+          type: string
+        discount_percentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        image:
+          type: string
+          format: binary
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+
+    UpdateSettingsRequest:
+      type: object
+      required: [name_ar, name_en, primary_color, secondary_color, accent_color, button_style, typography_selection]
+      properties:
+        name_ar:
+          type: string
+          maxLength: 255
+        name_en:
+          type: string
+          maxLength: 255
+        logo:
+          type: string
+          format: binary
+        cover_image:
+          type: string
+          format: binary
+        contact_email:
+          type: string
+          format: email
+        contact_phone:
+          type: string
+        address_ar:
+          type: string
+        address_en:
+          type: string
+        primary_color:
+          type: string
+          maxLength: 20
+        secondary_color:
+          type: string
+          maxLength: 20
+        accent_color:
+          type: string
+          maxLength: 20
+        button_style:
+          type: string
+          maxLength: 50
+        typography_selection:
+          type: string
+          maxLength: 50
+
+    ReorderRequest:
+      type: object
+      required: [order]
+      properties:
+        order:
+          type: array
+          items:
+            type: object
+            required: [id, order]
+            properties:
+              id:
+                type: integer
+              order:
+                type: integer
+
+    ActivityLogCollection:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityLog'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+            last_page:
+              type: integer
+            per_page:
+              type: integer
+            total:
+              type: integer
+
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        description:
+          type: string
+        old_values:
+          type: object
+          nullable: true
+        new_values:
+          type: object
+          nullable: true
+        user:
+          $ref: '#/components/schemas/User'
+        restaurant:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+  responses:
+    ValidationErrors:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string

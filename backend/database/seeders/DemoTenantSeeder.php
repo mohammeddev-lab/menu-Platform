@@ -92,63 +92,63 @@ class DemoTenantSeeder extends Seeder
         // Categories for Star Coffee
         $starCats = [
             [
-                'name_ar' => 'مشروبات ساخنة', 'name_en' => 'Hot Drinks',
-                'subtitle_ar' => 'أجود حبوب البن المحمصة بعناية', 'subtitle_en' => 'Finest roasted coffee beans',
+                'name' => 'مشروبات ساخنة / Hot Drinks',
+                'description' => 'أجود حبوب البن المحمصة بعناية / Finest roasted coffee beans',
                 'icon' => '☕', 'order' => 1,
                 'products' => [
                     [
-                        'name_ar' => 'إسبريسو', 'name_en' => 'Espresso',
-                        'description_ar' => 'جرعة مركزة من البن الغني بالنكهة الكلاسيكية القوية القوام.', 'description_en' => 'A concentrated shot of rich coffee with a strong classic body.',
+                        'name' => 'إسبريسو / Espresso',
+                        'description' => 'جرعة مركزة من البن الغني بالنكهة الكلاسيكية القوية القوام. / A concentrated shot of rich coffee with a strong classic body.',
                         'price' => 12.00, 'discount_price' => null, 'is_featured' => false, 'is_recommended' => false,
                         'tags' => ['Classic', 'Strong'], 'image' => 'https://images.unsplash.com/photo-1510707577719-5d6878021d47?auto=format&fit=crop&q=80&w=300'
                     ],
                     [
-                        'name_ar' => 'كابتشينو', 'name_en' => 'Cappuccino',
-                        'description_ar' => 'مزيج متوازن من الإسبريسو الفاخر مع حليب مبخر مغطى برغوة كثيفة ورشة كاكاو.', 'description_en' => 'Balanced blend of premium espresso with steamed milk, thick foam, and cocoa sprinkle.',
+                        'name' => 'كابتشينو / Cappuccino',
+                        'description' => 'مزيج متوازن من الإسبريسو الفاخر مع حليب مبخر مغطى برغوة كثيفة ورشة كاكاو. / Balanced blend of premium espresso with steamed milk, thick foam, and cocoa sprinkle.',
                         'price' => 16.00, 'discount_price' => 14.00, 'is_featured' => true, 'is_recommended' => true,
                         'tags' => ['Popular'], 'image' => 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&q=80&w=300'
                     ],
                     [
-                        'name_ar' => 'لاتيه كراميل', 'name_en' => 'Caramel Latte',
-                        'description_ar' => 'إسبريسو غني مع حليب مبخر مغطى بطبقة من صوص الكراميل اللذيذ والدافئ.', 'description_en' => 'Rich espresso with steamed milk topped with a layer of warm delicious caramel sauce.',
+                        'name' => 'لاتيه كراميل / Caramel Latte',
+                        'description' => 'إسبريسو غني مع حليب مبخر مغطى بطبقة من صوص الكراميل اللذيذ والدافئ. / Rich espresso with steamed milk topped with a layer of warm delicious caramel sauce.',
                         'price' => 18.00, 'discount_price' => null, 'is_featured' => false, 'is_recommended' => true,
                         'tags' => ['Sweet', 'Best Seller'], 'image' => 'https://images.unsplash.com/photo-1570968915860-54d5c301fc9f?auto=format&fit=crop&q=80&w=300'
                     ]
                 ]
             ],
             [
-                'name_ar' => 'مشروبات باردة', 'name_en' => 'Cold Coffee',
-                'subtitle_ar' => 'مشروبات باردة ومنعشة لكل الأوقات', 'subtitle_en' => 'Cold and refreshing drinks for all times',
+                'name' => 'مشروبات باردة / Cold Coffee',
+                'description' => 'مشروبات باردة ومنعشة لكل الأوقات / Cold and refreshing drinks for all times',
                 'icon' => '🥤', 'order' => 2,
                 'products' => [
                     [
-                        'name_ar' => 'سبانش لاتيه بارد', 'name_en' => 'Iced Spanish Latte',
-                        'description_ar' => 'إسبريسو فاخر مع حليب مكثف ومحلى، يقدّم بارداً مع قطع الثلج.', 'description_en' => 'Premium espresso with condensed sweetened milk, served cold with ice cubes.',
+                        'name' => 'سبانش لاتيه بارد / Iced Spanish Latte',
+                        'description' => 'إسبريسو فاخر مع حليب مكثف ومحلى، يقدّم بارداً مع قطع الثلج. / Premium espresso with condensed sweetened milk, served cold with ice cubes.',
                         'price' => 20.00, 'discount_price' => null, 'is_featured' => true, 'is_recommended' => true,
                         'tags' => ['Sweet', 'Best Seller'], 'image' => 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=300'
                     ],
                     [
-                        'name_ar' => 'آيس أمريكانو', 'name_en' => 'Iced Americano',
-                        'description_ar' => 'جرعتان من الإسبريسو الممزوج بالماء البارد والثلج لنكهة منعشة وحادة.', 'description_en' => 'Two shots of espresso blended with cold water and ice for a sharp, refreshing taste.',
+                        'name' => 'آيس أمريكانو / Iced Americano',
+                        'description' => 'جرعتان من الإسبريسو الممزوج بالماء البارد والثلج لنكهة منعشة وحادة. / Two shots of espresso blended with cold water and ice for a sharp, refreshing taste.',
                         'price' => 14.00, 'discount_price' => null, 'is_featured' => false, 'is_recommended' => false,
                         'tags' => ['Sugar-Free'], 'image' => 'https://images.unsplash.com/photo-1513530534585-c7b1394c6d51?auto=format&fit=crop&q=80&w=300'
                     ],
                 ]
             ],
             [
-                'name_ar' => 'الحلويات', 'name_en' => 'Desserts',
-                'subtitle_ar' => 'حلوياتنا الطازجة والمعدة بحب يومياً', 'subtitle_en' => 'Our fresh desserts made daily with love',
+                'name' => 'الحلويات / Desserts',
+                'description' => 'حلوياتنا الطازجة والمعدة بحب يومياً / Our fresh desserts made daily with love',
                 'icon' => '🍰', 'order' => 3,
                 'products' => [
                     [
-                        'name_ar' => 'كيكة سان سيباستيان', 'name_en' => 'San Sebastian Cake',
-                        'description_ar' => 'كيكة تشيز كيك محروقة الأطراف وقشطية القوام، تقدّم مع الشوكولاتة البلجيكية.', 'description_en' => 'Creamy basque burnt cheesecake served with warm premium Belgian chocolate sauce.',
+                        'name' => 'كيكة سان سيباستيان / San Sebastian Cake',
+                        'description' => 'كيكة تشيز كيك محروقة الأطراف وقشطية القوام، تقدّم مع الشوكولاتة البلجيكية. / Creamy basque burnt cheesecake served with warm premium Belgian chocolate sauce.',
                         'price' => 24.00, 'discount_price' => null, 'is_featured' => true, 'is_recommended' => true,
                         'tags' => ['Signature', 'Must Try'], 'image' => 'https://images.unsplash.com/photo-1524351199679-46cddf530c04?auto=format&fit=crop&q=80&w=300'
                     ],
                     [
-                        'name_ar' => 'تيراميسو كلاسيكي', 'name_en' => 'Classic Tiramisu',
-                        'description_ar' => 'حلوى إيطالية كلاسيكية بنكهة الإسبريسو ومغطاة بطبقات من جبن الماسكاربوني الفاخر والكاكاو.', 'description_en' => 'Classic Italian dessert flavored with espresso layered with premium mascarpone cheese and cocoa.',
+                        'name' => 'تيراميسو كلاسيكي / Classic Tiramisu',
+                        'description' => 'حلوى إيطالية كلاسيكية بنكهة الإسبريسو ومغطاة بطبقات من جبن الماسكاربوني الفاخر والكاكاو. / Classic Italian dessert flavored with espresso layered with premium mascarpone cheese and cocoa.',
                         'price' => 22.00, 'discount_price' => 19.00, 'is_featured' => false, 'is_recommended' => false,
                         'tags' => ['Traditional'], 'image' => 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&q=80&w=300'
                     ]
@@ -160,10 +160,8 @@ class DemoTenantSeeder extends Seeder
         foreach ($starCats as $cData) {
             $cat = Category::create([
                 'restaurant_id' => $starRestaurant->id,
-                'name_ar' => $cData['name_ar'],
-                'name_en' => $cData['name_en'],
-                'subtitle_ar' => $cData['subtitle_ar'],
-                'subtitle_en' => $cData['subtitle_en'],
+                'name' => $cData['name'],
+                'description' => $cData['description'],
                 'icon' => $cData['icon'],
                 'order' => $cData['order'],
             ]);
@@ -172,10 +170,8 @@ class DemoTenantSeeder extends Seeder
                 $p = Product::create([
                     'category_id' => $cat->id,
                     'restaurant_id' => $starRestaurant->id,
-                    'name_ar' => $pData['name_ar'],
-                    'name_en' => $pData['name_en'],
-                    'description_ar' => $pData['description_ar'],
-                    'description_en' => $pData['description_en'],
+                    'name' => $pData['name'],
+                    'description' => $pData['description'],
                     'price' => $pData['price'],
                     'discount_price' => $pData['discount_price'],
                     'is_available' => true,
@@ -257,16 +253,16 @@ class DemoTenantSeeder extends Seeder
         // Categories & Products for Al Reef
         $reefCat = Category::create([
             'restaurant_id' => $reefRestaurant->id,
-            'name_ar' => 'مشويات الريف', 'name_en' => 'Al Reef Grills',
-            'subtitle_ar' => 'مشوية على الفحم الطبيعي بلحم طازج يومياً', 'subtitle_en' => 'Grilled on natural charcoal using fresh meat daily',
+            'name' => 'مشويات الريف / Al Reef Grills',
+            'description' => 'مشوية على الفحم الطبيعي بلحم طازج يومياً / Grilled on natural charcoal using fresh meat daily',
             'icon' => '🍖', 'order' => 1,
         ]);
 
         $reefProduct = Product::create([
             'category_id' => $reefCat->id,
             'restaurant_id' => $reefRestaurant->id,
-            'name_ar' => 'صحن مشويات مشكل', 'name_en' => 'Mix Grill Platter',
-            'description_ar' => 'تشكيلة فاخرة من شيش طاووق، كباب لحم، كباب دجاج وريش غنم طازجة مشوية على الفحم، مع أرز مقبلات وبطاطس.', 'description_en' => 'Premium selection of shish tawook, beef kebab, chicken kebab, and lamb chops charcoal grilled, served with rice, appetizers, and fries.',
+            'name' => 'صحن مشويات مشكل / Mix Grill Platter',
+            'description' => 'تشكيلة فاخرة من شيش طاووق، كباب لحم، كباب دجاج وريش غنم طازجة مشوية على الفحم، مع أرز مقبلات وبطاطس. / Premium selection of shish tawook, beef kebab, chicken kebab, and lamb chops charcoal grilled, served with rice, appetizers, and fries.',
             'price' => 65.00, 'discount_price' => 55.00,
             'is_available' => true, 'is_featured' => true, 'is_recommended' => true,
             'tags' => ['Must Try', 'Best Seller'],
@@ -325,16 +321,16 @@ class DemoTenantSeeder extends Seeder
 
         $burgerCat = Category::create([
             'restaurant_id' => $burgerRestaurant->id,
-            'name_ar' => 'البرجر', 'name_en' => 'Burgers',
-            'subtitle_ar' => 'برجر محضر بصلصاتنا السرية الخاصة', 'subtitle_en' => 'Burgers prepared with our secret home-made sauces',
+            'name' => 'البرجر / Burgers',
+            'description' => 'برجر محضر بصلصاتنا السرية الخاصة / Burgers prepared with our secret home-made sauces',
             'icon' => '🍔', 'order' => 1,
         ]);
 
         $burgerProduct = Product::create([
             'category_id' => $burgerCat->id,
             'restaurant_id' => $burgerRestaurant->id,
-            'name_ar' => 'برجر اللحم الكلاسيكي', 'name_en' => 'Classic Beef Burger',
-            'description_ar' => 'لحم أنغوس بقري مشوي مع جبنة شيدر ذائبة، خس، طماطم، مخلل وصلصة بيت البرجر اللذيذة.', 'description_en' => 'Grilled Angus beef patty with melted cheddar cheese, lettuce, tomato, pickles, and delicious Burger House sauce.',
+            'name' => 'برجر اللحم الكلاسيكي / Classic Beef Burger',
+            'description' => 'لحم أنغوس بقري مشوي مع جبنة شيدر ذائبة، خس، طماطم، مخلل وصلصة بيت البرجر اللذيذة. / Grilled Angus beef patty with melted cheddar cheese, lettuce, tomato, pickles, and delicious Burger House sauce.',
             'price' => 28.00, 'discount_price' => null,
             'is_available' => true, 'is_featured' => true, 'is_recommended' => false,
             'tags' => ['Fresh', 'Original'],

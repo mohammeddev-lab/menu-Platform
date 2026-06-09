@@ -14,11 +14,11 @@ class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name_ar' => 'required|string|max:255',
-            'name_en' => 'required|string|max:255',
-            'subtitle_ar' => 'nullable|string|max:255',
-            'subtitle_en' => 'nullable|string|max:255',
-            'icon' => 'nullable|string|max:10',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'icon_type' => 'nullable|string|in:lucide,emoji,image',
+            'icon_value' => 'nullable|string|max:500',
+            'icon_image' => 'nullable|mimes:jpg,jpeg,png,webp,svg|max:5120',
         ];
     }
 }

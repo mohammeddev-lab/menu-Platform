@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $owners = User::role('restaurant-admin')->with('restaurant')->get();
+        $owners = User::role('restaurant-admin')->with(['restaurant', 'roles'])->get();
         return UserResource::collection($owners);
     }
 

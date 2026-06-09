@@ -11,13 +11,31 @@ class Category extends Model
 
     protected $fillable = [
         'restaurant_id',
+        'name',
         'name_ar',
         'name_en',
+        'description',
         'subtitle_ar',
         'subtitle_en',
         'icon',
+        'icon_type',
+        'icon_value',
         'order',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Category $category) {
+            if (!$category->name_ar && $category->name) {
+                $category->name_ar = $category->name;
+                $category->name_en = $category->name;
+            }
+            if (!$category->subtitle_ar && $category->description) {
+                $category->subtitle_ar = $category->description;
+                $category->subtitle_en = $category->description;
+            }
+        });
+    }
 
     public function restaurant()
     {

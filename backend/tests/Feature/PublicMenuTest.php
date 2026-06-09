@@ -40,8 +40,7 @@ class PublicMenuTest extends TestCase
         Product::create([
             'category_id' => $cat->id,
             'restaurant_id' => $this->restaurant->id,
-            'name_ar' => 'قهوة',
-            'name_en' => 'Coffee',
+            'name' => 'قهوة Coffee',
             'price' => 15.00,
             'is_available' => true,
             'is_recommended' => true,

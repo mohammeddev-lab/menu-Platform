@@ -16,8 +16,8 @@ class UpdateSettingsRequest extends FormRequest
         return [
             'name_ar' => 'required|string|max:255',
             'name_en' => 'required|string|max:255',
-            'logo' => 'nullable',
-            'cover_image' => 'nullable',
+            'logo' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
             'contact_email' => 'nullable|email',
             'contact_phone' => 'nullable|string',
             'address_ar' => 'nullable|string',

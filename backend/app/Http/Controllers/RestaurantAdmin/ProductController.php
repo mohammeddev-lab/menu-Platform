@@ -27,6 +27,7 @@ class ProductController extends Controller
     {
         $restaurant = $request->get('tenant_restaurant');
 
+        $restaurant->load('activeSubscription.plan');
         $activeSub = $restaurant->activeSubscription;
         $limit = $activeSub ? $activeSub->plan->limit_products : 15;
         $currentCount = $restaurant->products()->count();
@@ -48,10 +49,12 @@ class ProductController extends Controller
         $product = Product::create([
             'category_id' => $request->category_id,
             'restaurant_id' => $restaurant->id,
-            'name_ar' => $request->name_ar,
-            'name_en' => $request->name_en,
-            'description_ar' => $request->description_ar,
-            'description_en' => $request->description_en,
+            'name' => $request->name,
+            'name_ar' => $request->name,
+            'name_en' => $request->name,
+            'description' => $request->description,
+            'description_ar' => $request->description,
+            'description_en' => $request->description,
             'price' => $request->price,
             'discount_price' => $request->discount_price,
             'image' => $imagePath,
@@ -62,7 +65,7 @@ class ProductController extends Controller
             'order' => $maxOrder + 1,
         ]);
 
-        ActivityLogger::log('create_product', "Created product: {$product->name_en}", $product->toArray(), $restaurant->id);
+        ActivityLogger::log('create_product', "Created product: {$product->name}", $product->toArray(), $restaurant->id);
 
         return response()->json(new ProductResource($product), 201);
     }
@@ -76,9 +79,13 @@ class ProductController extends Controller
         }
 
         $data = $request->only([
-            'category_id', 'name_ar', 'name_en', 'description_ar', 'description_en',
+            'category_id', 'name', 'description',
             'price', 'discount_price', 'is_available', 'is_featured', 'is_recommended', 'tags',
         ]);
+        $data['name_ar'] = $data['name'];
+        $data['name_en'] = $data['name'];
+        $data['description_ar'] = $data['description'] ?? null;
+        $data['description_en'] = $data['description'] ?? null;
 
         if ($request->hasFile('image')) {
             if ($product->image) {
@@ -91,7 +98,7 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        ActivityLogger::log('update_product', "Updated product: {$product->name_en}", $product->toArray(), $restaurant->id);
+        ActivityLogger::log('update_product', "Updated product: {$product->name}", $product->toArray(), $restaurant->id);
 
         return response()->json(new ProductResource($product));
     }
@@ -126,7 +133,7 @@ class ProductController extends Controller
             Storage::disk('public')->delete($oldPath);
         }
 
-        ActivityLogger::log('delete_product', "Deleted product: {$product->name_en}", $product->toArray(), $restaurant->id);
+        ActivityLogger::log('delete_product', "Deleted product: {$product->name}", $product->toArray(), $restaurant->id);
 
         $product->delete();
 

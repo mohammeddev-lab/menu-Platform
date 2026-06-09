@@ -46,7 +46,7 @@ class SettingController extends Controller
 
     public function getActivityLogs()
     {
-        $logs = ActivityLog::with(['user', 'restaurant.settings'])
+        $logs = ActivityLog::with(['user.roles', 'restaurant.settings'])
             ->orderBy('created_at', 'desc')
             ->paginate(50);
 

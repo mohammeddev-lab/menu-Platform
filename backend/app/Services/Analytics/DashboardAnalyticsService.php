@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\Category;
 use App\Models\MenuView;
 use App\Models\Product;
 use App\Models\Restaurant;
@@ -10,34 +11,42 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardAnalyticsService
 {
+    private function dateExtract(string $column, string $part): string
+    {
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'sqlite') {
+            $format = $part === 'year' ? '%Y' : '%m';
+            return "strftime('{$format}', {$column})";
+        }
+        return strtoupper($part) . "({$column})";
+    }
     public function restaurantDashboard(Restaurant $restaurant): array
     {
         $categoriesCount = $restaurant->categories()->count();
         $productsCount = $restaurant->products()->count();
         $offersCount = $restaurant->offers()->where('is_active', true)->count();
-        $totalViews = MenuView::where('restaurant_id', $restaurant->id)->count();
-        $dailyViews = MenuView::where('restaurant_id', $restaurant->id)
-            ->whereDate('viewed_at', today())
-            ->count();
-        $monthlyViews = MenuView::where('restaurant_id', $restaurant->id)
-            ->where(DB::raw("strftime('%m', viewed_at)"), now()->format('m'))
-            ->where(DB::raw("strftime('%Y', viewed_at)"), now()->format('Y'))
-            ->count();
+
+        $viewStats = MenuView::where('restaurant_id', $restaurant->id)
+            ->selectRaw('COUNT(*) as total_views')
+            ->selectRaw('SUM(CASE WHEN viewed_at >= ? THEN 1 ELSE 0 END) as daily_views', [now()->startOfDay()])
+            ->selectRaw('SUM(CASE WHEN viewed_at >= ? AND viewed_at <= ? THEN 1 ELSE 0 END) as monthly_views',
+                [now()->startOfMonth(), now()->endOfMonth()])
+            ->first();
 
         $mostViewedProducts = DB::table('product_views')
             ->join('products', 'product_views.product_id', '=', 'products.id')
-            ->select('products.name_ar', 'products.name_en', DB::raw('count(*) as views_count'))
+            ->select('products.name', DB::raw('count(*) as views_count'))
             ->where('product_views.restaurant_id', $restaurant->id)
-            ->groupBy('products.id', 'products.name_ar', 'products.name_en')
+            ->groupBy('products.id', 'products.name')
             ->orderBy('views_count', 'desc')
             ->limit(5)
             ->get();
 
         return [
             'metrics' => [
-                'total_views' => $totalViews,
-                'daily_views' => $dailyViews,
-                'monthly_views' => $monthlyViews,
+                'total_views' => (int) $viewStats->total_views,
+                'daily_views' => (int) $viewStats->daily_views,
+                'monthly_views' => (int) $viewStats->monthly_views,
                 'categories_count' => $categoriesCount,
                 'products_count' => $productsCount,
                 'active_offers' => $offersCount,
@@ -57,7 +66,7 @@ class DashboardAnalyticsService
 
         $monthlyViews = MenuView::where('restaurant_id', $restaurant->id)
             ->where('viewed_at', '>=', now()->subMonths(12))
-            ->select(DB::raw("strftime('%Y', viewed_at) as year"), DB::raw("strftime('%m', viewed_at) as month"), DB::raw('count(*) as count'))
+            ->select(DB::raw($this->dateExtract('viewed_at', 'year') . ' as year'), DB::raw($this->dateExtract('viewed_at', 'month') . ' as month'), DB::raw('count(*) as count'))
             ->groupBy('year', 'month')
             ->orderBy('year')
             ->orderBy('month')
@@ -66,18 +75,18 @@ class DashboardAnalyticsService
         $mostViewedCategories = DB::table('product_views')
             ->join('products', 'product_views.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->select('categories.name_ar', 'categories.name_en', DB::raw('count(*) as views_count'))
+            ->select('categories.name', DB::raw('count(*) as views_count'))
             ->where('product_views.restaurant_id', $restaurant->id)
-            ->groupBy('categories.id', 'categories.name_ar', 'categories.name_en')
+            ->groupBy('categories.id', 'categories.name')
             ->orderBy('views_count', 'desc')
             ->limit(5)
             ->get();
 
         $mostViewedProducts = DB::table('product_views')
             ->join('products', 'product_views.product_id', '=', 'products.id')
-            ->select('products.name_ar', 'products.name_en', DB::raw('count(*) as views_count'))
+            ->select('products.name', DB::raw('count(*) as views_count'))
             ->where('product_views.restaurant_id', $restaurant->id)
-            ->groupBy('products.id', 'products.name_ar', 'products.name_en')
+            ->groupBy('products.id', 'products.name')
             ->orderBy('views_count', 'desc')
             ->limit(5)
             ->get();
@@ -109,7 +118,7 @@ class DashboardAnalyticsService
             ->sum('subscription_plans.price');
 
         $totalProducts = Product::count();
-        $totalCategories = \App\Models\Category::count();
+        $totalCategories = Category::count();
 
         $registrationsGrowth = User::role('restaurant-admin')
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))

@@ -80,7 +80,7 @@ class SuperAdminTest extends TestCase
         ], $this->headers());
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['data' => ['id', 'slug']]);
+            ->assertJsonStructure(['id', 'slug']);
 
         $this->assertDatabaseHas('restaurants', ['slug' => 'new-restaurant']);
     }
@@ -144,7 +144,7 @@ class SuperAdminTest extends TestCase
         ], $this->headers());
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.name', 'Test Plan');
+            ->assertJsonPath('name', 'Test Plan');
     }
 
     public function test_cannot_delete_plan_with_active_subscriptions(): void

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use chillerlan\QRCode\Common\EccLevel;
-use chillerlan\QRCode\Output\QROutputInterface;
+use chillerlan\QRCode\Output\QRGdImagePNG;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -15,8 +15,9 @@ class QRCodeGenerator
         $options = new QROptions([
             'version' => 5,
             'eccLevel' => EccLevel::L,
-            'outputType' => QROutputInterface::OUTPUT_IMAGE_PNG,
+            'outputInterface' => QRGdImagePNG::class,
             'scale' => 10,
+            'outputBase64' => true,
         ]);
 
         return (new QRCode($options))->render($url);

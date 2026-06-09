@@ -19,7 +19,9 @@ class SubscriptionPlanController extends Controller
 
     public function store(StorePlanRequest $request): JsonResponse
     {
-        $plan = SubscriptionPlan::create($request->all());
+        $plan = SubscriptionPlan::create($request->only([
+            'name', 'price', 'duration_days', 'features', 'limit_categories', 'limit_products',
+        ]));
 
         ActivityLogger::log('create_plan', "Super admin created subscription plan: {$plan->name}", $plan->toArray());
 
@@ -28,7 +30,9 @@ class SubscriptionPlanController extends Controller
 
     public function update(UpdatePlanRequest $request, SubscriptionPlan $plan): JsonResponse
     {
-        $plan->update($request->all());
+        $plan->update($request->only([
+            'name', 'price', 'duration_days', 'features', 'limit_categories', 'limit_products',
+        ]));
 
         ActivityLogger::log('update_plan', "Super admin updated subscription plan: {$plan->name}", $plan->toArray());
 
