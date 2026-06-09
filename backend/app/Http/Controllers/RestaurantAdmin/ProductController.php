@@ -49,12 +49,12 @@ class ProductController extends Controller
         $product = Product::create([
             'category_id' => $request->category_id,
             'restaurant_id' => $restaurant->id,
-            'name' => $request->name,
-            'name_ar' => $request->name,
-            'name_en' => $request->name,
-            'description' => $request->description,
-            'description_ar' => $request->description,
-            'description_en' => $request->description,
+            'name' => $request->name_en ?? $request->name,
+            'name_ar' => $request->name_ar ?? $request->name,
+            'name_en' => $request->name_en ?? $request->name,
+            'description' => $request->description_en ?? $request->description,
+            'description_ar' => $request->description_ar ?? $request->description,
+            'description_en' => $request->description_en ?? $request->description,
             'price' => $request->price,
             'discount_price' => $request->discount_price,
             'image' => $imagePath,
@@ -79,13 +79,13 @@ class ProductController extends Controller
         }
 
         $data = $request->only([
-            'category_id', 'name', 'description',
+            'category_id', 'name', 'name_ar', 'name_en', 'description', 'description_ar', 'description_en',
             'price', 'discount_price', 'is_available', 'is_featured', 'is_recommended', 'tags',
         ]);
-        $data['name_ar'] = $data['name'];
-        $data['name_en'] = $data['name'];
-        $data['description_ar'] = $data['description'] ?? null;
-        $data['description_en'] = $data['description'] ?? null;
+        $data['name_ar'] = $data['name_ar'] ?? $data['name'];
+        $data['name_en'] = $data['name_en'] ?? $data['name'];
+        $data['description_ar'] = $data['description_ar'] ?? ($data['description'] ?? null);
+        $data['description_en'] = $data['description_en'] ?? ($data['description'] ?? null);
 
         if ($request->hasFile('image')) {
             if ($product->image) {

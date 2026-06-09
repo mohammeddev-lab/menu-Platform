@@ -41,10 +41,10 @@ class CategoryController extends Controller
         $maxOrder = $restaurant->categories()->max('order') ?? 0;
 
         $data = $request->only([
-            'name', 'description', 'icon_type', 'icon_value'
+            'name', 'name_ar', 'name_en', 'description', 'icon_type', 'icon_value'
         ]);
-        $data['name_ar'] = $data['name'];
-        $data['name_en'] = $data['name'];
+        $data['name_ar'] = $data['name_ar'] ?? $data['name'];
+        $data['name_en'] = $data['name_en'] ?? $data['name'];
         $data['subtitle_ar'] = $data['description'] ?? null;
         $data['subtitle_en'] = $data['description'] ?? null;
 
@@ -72,10 +72,10 @@ class CategoryController extends Controller
         }
 
         $data = $request->only([
-            'name', 'description', 'icon_type', 'icon_value'
+            'name', 'name_ar', 'name_en', 'description', 'icon_type', 'icon_value'
         ]);
-        $data['name_ar'] = $data['name'];
-        $data['name_en'] = $data['name'];
+        $data['name_ar'] = $data['name_ar'] ?? $data['name'];
+        $data['name_en'] = $data['name_en'] ?? $data['name'];
         $data['subtitle_ar'] = $data['description'] ?? null;
         $data['subtitle_en'] = $data['description'] ?? null;
 

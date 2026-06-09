@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
+use App\Http\Resources\OfferResource;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\RestaurantSettingResource;
 use App\Models\MenuView;
 use App\Models\Product;
 use App\Models\ProductView;
@@ -58,10 +62,10 @@ class MenuController extends Controller
                 'slug' => $restaurant->slug,
                 'status' => $restaurant->status,
             ],
-            'settings' => $settings,
-            'categories' => $categories,
-            'offers' => $offers,
-            'recommended' => $recommendedProducts,
+            'settings' => new RestaurantSettingResource($settings),
+            'categories' => $categories->map(fn ($c) => new CategoryResource($c)),
+            'offers' => $offers->map(fn ($o) => new OfferResource($o)),
+            'recommended' => $recommendedProducts->map(fn ($p) => new ProductResource($p)),
         ]);
     }
 

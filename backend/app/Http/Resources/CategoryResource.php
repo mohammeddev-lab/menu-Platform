@@ -13,6 +13,8 @@ class CategoryResource extends JsonResource
             'id' => $this->id,
             'restaurant_id' => $this->restaurant_id,
             'name' => $this->name,
+            'name_ar' => $this->name_ar,
+            'name_en' => $this->name_en,
             'description' => $this->description,
             'icon' => $this->icon,
             'icon_type' => $this->icon_type,

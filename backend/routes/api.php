@@ -43,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [SuperDashboardController::class, 'index']);
         
         Route::get('/restaurants', [SuperRestaurantController::class, 'index']);
+        Route::post('/restaurants/register', [SuperRestaurantController::class, 'register']);
         Route::post('/restaurants', [SuperRestaurantController::class, 'store']);
         Route::get('/restaurants/{restaurant}', [SuperRestaurantController::class, 'show']);
         Route::post('/restaurants/{restaurant}/status', [SuperRestaurantController::class, 'updateStatus']);
